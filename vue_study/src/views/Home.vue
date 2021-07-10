@@ -1,5 +1,6 @@
 <template>
   <div class="home">
+    this is home compo
     <HelloWorld msg="Welcome to Your Vue.js App"/>
   </div>
 </template>

@@ -1,6 +1,6 @@
 <template>
   <div class="hello">
-    hello world compo
+    this is hello world compo
   </div>
 </template>
 
