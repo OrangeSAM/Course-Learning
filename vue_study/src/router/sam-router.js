@@ -79,7 +79,7 @@ VueRouter.install = function(_Vue) {
             href: "#" + this.to,
           },
         },
-        this.$slots.default
+        this.$slots.default//存放不具名插槽的数据
       );
     },
   });
