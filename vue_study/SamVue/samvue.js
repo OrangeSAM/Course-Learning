@@ -116,6 +116,7 @@ class Compile {
 
   // 处理插值文本 {{xx}}
   compileText(node) {
+    // node.textContent = this.$vm[RegExp.$1]
     this.update(node, RegExp.$1, "text");
   }
 
@@ -123,7 +124,7 @@ class Compile {
     node.textContent = val;
   }
 
-  // 编译element
+  // 编译element，处理指令部分
   compileElement(node) {
     // 1.获取当前元素的所有属性，并判断他们是不是动态的
     const nodeAttrs = node.attributes;
@@ -143,11 +144,13 @@ class Compile {
 
   // k-text
   text(node, exp) {
+    // node.textContent = this.$vm[exp]
     this.update(node, exp, "text");
   }
 
   // k-html
   html(node, exp) {
+    // node.innerHTML = this.$vm[exp]
     this.update(node, exp, "html");
   }
 

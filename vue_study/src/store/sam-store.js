@@ -12,6 +12,24 @@ class Store {
     // 1.保存选项
     this._mutations = options.mutations;
     this._actions = options.actions;
+    this._getters = options.getters;
+
+
+    // 定义computed选项
+    const computed = {}
+    this.getters = {}
+    const store = this
+    Object.keys(this._getters).forEach(key => {
+      const fn = store._getters[key]
+      computed[key] = function() {
+        return fn(store.state)
+      }
+      // 为getters定义只读属性
+      Object.defineProperty(store.getters, key, {
+        get: () => store._vm[key]
+      })
+    })
+
 
     // 2.暴露state属性, 并对传入state选项做响应式处理
     // 目的是在改变state的时候，view上的数据也会跟着改变
@@ -25,6 +43,7 @@ class Store {
           $$state: options.state
         }
       },
+      computed
     })
 
     // 绑定上下文，确保是store实例

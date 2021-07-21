@@ -5,11 +5,11 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    counter: 0
+    count: 0
   },
   mutations: {
     add(state) {
-      state.counter++
+      state.count++
     }
   },
   actions: {
@@ -21,8 +21,8 @@ export default new Vuex.Store({
   },
   getters: {
     doubleCounter: state => {
-      return state.counter * 2
-    }
+      return state.count * 2;
+    },
   },
   modules: {
   }
