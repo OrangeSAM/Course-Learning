@@ -9,24 +9,33 @@ let Vue;
 
 class Store {
   constructor(options) {
-    // 1.保存选项
+    // 1.保存实例化时传来的选项
+    console.log(22222, options)
     this._mutations = options.mutations;
     this._actions = options.actions;
     this._getters = options.getters;
-
 
     // 定义computed选项
     const computed = {}
     this.getters = {}
     const store = this
     Object.keys(this._getters).forEach(key => {
-      const fn = store._getters[key]
+      // 从用户传入的getters取出对应“函数”，已方便后面塞进参数state
+      const fn = this._getters[key]
+
+      console.log(this,99)
+      // 已经拥有state参数的高阶函数
       computed[key] = function() {
+        console.log(this,29292)
         return fn(store.state)
       }
       // 为getters定义只读属性
-      Object.defineProperty(store.getters, key, {
-        get: () => store._vm[key]
+      Object.defineProperty(this.getters, key, {
+        get: () => {
+          console.log(store,229)
+          // vm是借由vue生的蛋，所以可以直接点出来，
+          return store._vm[key]
+        }
       })
     })
 
@@ -43,7 +52,7 @@ class Store {
           $$state: options.state
         }
       },
-      computed
+      computed: computed
     })
 
     // 绑定上下文，确保是store实例
