@@ -6,7 +6,6 @@
 
 let Vue;
 
-// 我们自己的router
 // 声明插件VueRouter
 class VueRouter {
   constructor(options) {
@@ -14,10 +13,12 @@ class VueRouter {
     this.$options = options;
 
     // current一个初始值
-    // 如何是current成为一个响应式数据
+    // 如何使current成为一个响应式数据
     // 此方法可以给一个对象指定一个响应式属性
-    // 为什么current变了，用到他的方法都会重新执行一下呢，这个依赖关系是如何产生的
-    //
+    // 为什么current变了，用到他的方法都会重新执行一下呢，这个依赖关系是如何产生的，用到他的地方都订阅了他的变动
+    // 路由变动视图更新的核心
+    // 用Vue.set不行的原因，set对参数要求其本身已经是响应式对象
+    // Vue.util应该是Vue内部的方法
     Vue.util.defineReactive(
       this,
       "current",
@@ -37,6 +38,13 @@ VueRouter.install = function(_Vue) {
   // 传入构造函数，是不是就能对其进行扩展呀
   Vue = _Vue;
 
+  // 最简单的拍脑袋的做法就是，把router的实例放到Vue的原型上
+  // Vue.prototype = router
+  // 但问题在于install方法在执行的时候，router还未实例化
+  // 所以无法在install方法执行时将router实例挂载到Vue原型上
+  // 即，要将挂载到原型上的操作延迟执行，延迟到router和vue都实例化完毕之后
+
+
   // 1.注册$router,让所有组件实例都可以访问它
   // 混入：Vue.mixin({})
   // 选用Vue.mixin配合beforeCreate实现router注册的逻辑
@@ -49,7 +57,7 @@ VueRouter.install = function(_Vue) {
       // 延迟执行：延迟到router实例和vue实例都创建完毕
       if (this.$options.router) {
         // 如果存在说明是根实例，在根实例还是构造函数？放一份，
-        //  就可以通过原型拿到了
+        // 就可以通过原型拿到了
         Vue.prototype.$router = this.$options.router;
       }
     },

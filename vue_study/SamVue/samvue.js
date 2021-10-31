@@ -40,6 +40,7 @@ function observe(obj) {
 }
 
 // 对data中的数据进行代理，实现直接this.data中的key
+// 让用户可以做到不用this.$data.xx，而直接this.xx
 function proxy(vm) {
   Object.keys(vm.$data).forEach((key) => {
     Object.defineProperty(vm, key, {
