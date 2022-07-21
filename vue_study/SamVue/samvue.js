@@ -13,8 +13,10 @@ function defineReactive(obj, key, val) {
 
   Object.defineProperty(obj, key, {
     get() {
-      console.log("get", key);
       // 依赖收集
+      // 如何理解这个Dep.target
+      // 第一次做响应式处理时，Dep.target不存在值
+      // 哪里读了我，我就把你存起来，下次有谁更新这个值，我就挨个更新下
       Dep.target && dep.addDep(Dep.target)
       return val;
     },
@@ -23,7 +25,6 @@ function defineReactive(obj, key, val) {
         // 如果传入v是一个对象，则仍然需要做响应式处理
         observe(v);
         val = v;
-        console.log("set", key);
         // update()
         dep.notify()
       }
@@ -64,6 +65,7 @@ class KVue {
     observe(this.$data);
 
     // 2.5代理
+    // 使得用户在使用时，可以直接this.xx(data中的属性)
     proxy(this);
 
     // 3.编译
@@ -82,13 +84,14 @@ class Compile {
 
   // el模板根节点
   compile(el) {
-    // 遍历el
     // 1.获取el所有子节点
     el.childNodes.forEach((node) => {
+      // 1 元素节点
+      // 3 文本节点
+
       // 2.判断node类型
       if (node.nodeType === 1) {
         // 元素
-        // console.log('element', node.nodeName);
         this.compileElement(node);
 
         // 递归
@@ -97,7 +100,6 @@ class Compile {
         }
       } else if (this.isInter(node)) {
         // 插值文本
-        // console.log('text', node.textContent);
         this.compileText(node);
       }
     });
@@ -119,10 +121,6 @@ class Compile {
   compileText(node) {
     // node.textContent = this.$vm[RegExp.$1]
     this.update(node, RegExp.$1, "text");
-  }
-
-  textUpdater(node, val) {
-    node.textContent = val;
   }
 
   // 编译element，处理指令部分
@@ -148,19 +146,31 @@ class Compile {
     // node.textContent = this.$vm[exp]
     this.update(node, exp, "text");
   }
+  textUpdater(node, val) {
+    node.textContent = val;
+  }
 
   // k-html
   html(node, exp) {
     // node.innerHTML = this.$vm[exp]
     this.update(node, exp, "html");
   }
-
   htmlUpdater(node, val) {
     node.innerHTML = val;
   }
 
-  // {{ooxx}}
+  // k-model
+  model(node, exp) {
+    this.update(node, exp, "model")
+  }
+  modelUpdater(node, val) {
+    node.textContent = val
+  }
+
+  // {{sam}}
   isInter(node) {
+    // 是文本节点，且文本的内容包含属性值
+    console.log(node, node.textContent)
     return node.nodeType === 3 && /\{\{(.*)\}\}/.test(node.textContent);
   }
 }
@@ -174,6 +184,7 @@ class Watcher {
 
     // 触发依赖收集
     Dep.target = this
+    // 读这一下很重要
     vm[key]
     Dep.target = null
   }
