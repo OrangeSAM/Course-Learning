@@ -9,6 +9,8 @@ function defineReactive(obj, key, val) {
   observe(val);
 
   // 创建一个Dep实例和key对应
+  // 一个key对应一个Dep
+  // 但是一个dep中，可能包含多个watcher，因为模板中可能出现多次同一个key的使用
   const dep = new Dep()
 
   Object.defineProperty(obj, key, {
@@ -17,6 +19,7 @@ function defineReactive(obj, key, val) {
       // 如何理解这个Dep.target
       // 第一次做响应式处理时，Dep.target不存在值
       // 哪里读了我，我就把你存起来，下次有谁更新这个值，我就挨个更新下
+      // todo 为什么是Dep.target，再addDep
       Dep.target && dep.addDep(Dep.target)
       return val;
     },
@@ -61,6 +64,7 @@ class KVue {
     // 1.保存选项
     this.$options = options;
     this.$data = options.data;
+    this.$methods = options.methods
     // 2.对data选项做响应式处理
     observe(this.$data);
 
@@ -106,13 +110,19 @@ class Compile {
   }
 
   // 统一做初始化和更新处理
+  // 编译的时候，能够确定属性值对应的更新函数是什么，比如count textUpdater
   update(node, exp, dir) {
     // 初始化
     const fn = this[dir + "Updater"];
     fn && fn(node, this.$vm[exp]);
 
-    // 更新
+    // 更新函数
+    // todo 为什么要写成function的形式，直接传fn(node, val)是否可行
+    // 每一个更新都由一个watcher管理，
+    // 每当模板编译时遇到一个key，比如count，就会产生一个watcher
+    // 这个watcher随后就会被加入该key值对应的dep中
     new Watcher(this.$vm, exp, function(val) {
+      // 在update那里传入最新的值，以供更新函数更新
       fn && fn(node, val);
     })
   }
@@ -138,7 +148,17 @@ class Compile {
         // 判断是否存在指令处理函数，若存在则调用它
         this[dir] && this[dir](node, exp);
       }
+
+      // 判断事件
+      if (attrName.startsWith('@')) {
+        const direc = attrName.substring(1)
+        this[direc] && this[direc](node, exp)
+      }
     });
+  }
+
+  click(node, exp) {
+    node.addEventListener('click', this.$vm.$methods[exp])
   }
 
   // k-text
@@ -170,7 +190,6 @@ class Compile {
   // {{sam}}
   isInter(node) {
     // 是文本节点，且文本的内容包含属性值
-    console.log(node, node.textContent)
     return node.nodeType === 3 && /\{\{(.*)\}\}/.test(node.textContent);
   }
 }
@@ -180,16 +199,21 @@ class Watcher {
   constructor(vm, key, updateFn) {
     this.vm = vm;
     this.key = key;
-    this.updateFn = updateFn;
+    this.updateFn = updateFn; // 更新函数保存了节点的信息
 
     // 触发依赖收集
+    // this是一个watcher实例
     Dep.target = this
     // 读这一下很重要
+    // 下面这个读取操作会触发上面defineReactive的get
+    // 此时，Dep.target 已经在刚刚被赋值了，所以defineReactive的dep.addDep能够被执行
+    // 这样，一个watcher就被加入到了Dep中
     vm[key]
     Dep.target = null
   }
 
   update() {
+    // 这里的updateFn是123行的function，function内部的node是闭包保存的，val是这里传入的
     this.updateFn.call(this.vm, this.vm[this.key]);
   }
 }
@@ -202,6 +226,7 @@ class Dep {
   }
 
   addDep(dep) {
+    // 这个dep就是一个watcher实例
     this.deps.push(dep)
   }
 

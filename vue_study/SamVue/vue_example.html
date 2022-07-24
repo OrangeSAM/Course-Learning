@@ -10,7 +10,8 @@
 <body>
 
 <div id="app">
-  <p @click="add">{{counter}}</p>
+  <div @click="add">点击这里</div>
+  <p>{{counter}}</p>
   <p k-text="counter"></p>
   <p k-html="desc"></p>
   <input type="text" k-model="counter">
@@ -27,7 +28,7 @@
     },
     methods: {
       add() {
-        this.counter++
+        console.log('methods被执行了')
       }
     },
   })
