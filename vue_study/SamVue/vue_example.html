@@ -14,7 +14,8 @@
   <p>{{counter}}</p>
   <p k-text="counter"></p>
   <p k-html="desc"></p>
-  <input type="text" k-model="counter">
+  <div>{{age}}</div>
+  <input type="text" k-model="age">
 </div>
 
 </body>
@@ -24,6 +25,7 @@
     el: '#app',
     data: {
       counter: 1,
+      age: 2,
       desc: '<p>村长<span style="color:red">真棒</span></p>'
     },
     methods: {

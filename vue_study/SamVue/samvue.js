@@ -161,6 +161,16 @@ class Compile {
     node.addEventListener('click', this.$vm.$methods[exp])
   }
 
+  model(node, exp) {
+    this.update(node, exp, 'model')
+    node.addEventListener('input', (e) => {
+      this.$vm[exp] = this.$vm[exp] + '' +e.data
+    } )
+  }
+  modelUpdater(node, val) {
+    node.value = val
+  }
+
   // k-text
   text(node, exp) {
     // node.textContent = this.$vm[exp]
@@ -177,14 +187,6 @@ class Compile {
   }
   htmlUpdater(node, val) {
     node.innerHTML = val;
-  }
-
-  // k-model
-  model(node, exp) {
-    this.update(node, exp, "model")
-  }
-  modelUpdater(node, val) {
-    node.textContent = val
   }
 
   // {{sam}}
