@@ -164,7 +164,12 @@ class Compile {
   model(node, exp) {
     this.update(node, exp, 'model')
     node.addEventListener('input', (e) => {
-      this.$vm[exp] = this.$vm[exp] + '' +e.data
+      if (e.data === null) {
+        this.$vm[exp] = ''
+      } else {
+        // 切换中文输入法，会有原有数据被情况的bug
+        this.$vm[exp] = this.$vm[exp] + '' +e.data
+      }
     } )
   }
   modelUpdater(node, val) {
